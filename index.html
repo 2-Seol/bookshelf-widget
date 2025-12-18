@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>노션 책장 위젯</title>
+    <style>
+        @font-face {
+            font-family: 'Isamanru';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10@1.0/GongGothicMedium.woff') format('woff');
+            font-weight: normal;
+            font-display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Isamanru', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .setup-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .setup-panel h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+
+        .save-config {
+            background: #4ecdc4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .save-config:hover {
+            background: #45b8b0;
+            transform: translateY(-2px);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #rst {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        #rst:hover:not(:disabled) {
+            background: #ee5a52;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+
+        #sync {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        #sync:hover:not(:disabled) {
+            background: #45b8b0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+
+        .bookshelf {
+            background: #e3c5a1;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .bookshelf::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 15px;
+            background: #d4b590;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .shelf {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            min-height: 250px;
+            padding: 20px;
+            background: rgba(227, 197, 161, 0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            flex-wrap: wrap;
+        }
+
+        .shelf::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.2));
+        }
+
+        .book {
+            width: 60px;
+            height: 200px;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 5px;
+        }
+
+        .book:hover {
+            transform: translateY(-10px);
+            box-shadow: 2px 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .book::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .book-title {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            max-height: 120px;
+            overflow: hidden;
+        }
+
+        .book-author {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            color: rgba(255,255,255,0.8);
+            font-size: 9px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            max-height: 60px;
+            overflow: hidden;
+        }
+
+        .empty-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255,255,255,0.5);
+            font-size: 18px;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .notification.success {
+            background: #51cf66;
+        }
+
+        .notification.error {
+            background: #ff6b6b;
+        }
+
+        .notification.info {
+            background: #4ecdc4;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="setup-panel" id="setupPanel">
+            <h3>🔧 노션 데이터베이스 설정</h3>
+            <div class="input-group">
+                <label for="databaseId">Database ID</label>
+                <input type="text" id="databaseId" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+            </div>
+            <button class="save-config" onclick="saveConfig()">설정 저장</button>
+        </div>
+
+        <div class="controls">
+            <button id="rst" onclick="resetBookshelf()">RST</button>
+            <button id="sync" onclick="syncDatabase()">SYNC</button>
+        </div>
+        
+        <div class="bookshelf">
+            <div class="shelf" id="bookshelf">
+                <div class="empty-message">설정을 완료하고 SYNC 버튼을 눌러주세요</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let config = {
+            databaseId: ''
+        };
+        let currentBooks = [];
+
+        const bookColors = [
+            '#bdb9b7', '#e09382', '#8fb9bf', '#b4a9cc', '#e0b8d6',
+            '#8888b8', '#88a1b8', '#466d8f', '#609977', '#82ad93'
+        ];
+
+        // 저장된 설정 불러오기
+        function loadConfig() {
+            const saved = localStorage.getItem('notionBookshelfConfig');
+            if (saved) {
+                config = JSON.parse(saved);
+                document.getElementById('databaseId').value = config.databaseId;
+                document.getElementById('setupPanel').style.display = 'none';
+            }
+            
+            const savedBooks = localStorage.getItem('notionBookshelfBooks');
+            if (savedBooks) {
+                currentBooks = JSON.parse(savedBooks);
+                renderBookshelf();
+            }
+        }
+
+        function saveConfig() {
+            const databaseId = document.getElementById('databaseId').value.trim();
+
+            if (!databaseId) {
+                showNotification('Database ID를 입력해주세요', 'error');
+                return;
+            }
+
+            config = { databaseId };
+            localStorage.setItem('notionBookshelfConfig', JSON.stringify(config));
+            document.getElementById('setupPanel').style.display = 'none';
+            showNotification('설정이 저장되었습니다', 'success');
+        }
+
+        function getRandomColor() {
+            return bookColors[Math.floor(Math.random() * bookColors.length)];
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function createBook(title, author) {
+            const book = document.createElement('div');
+            book.className = 'book';
+            book.style.backgroundColor = getRandomColor();
+            
+            const bookTitle = document.createElement('div');
+            bookTitle.className = 'book-title';
+            bookTitle.textContent = title;
+            
+            const bookAuthor = document.createElement('div');
+            bookAuthor.className = 'book-author';
+            bookAuthor.textContent = author;
+            
+            book.appendChild(bookTitle);
+            book.appendChild(bookAuthor);
+            
+            return book;
+        }
+
+        function renderBookshelf() {
+            const shelf = document.getElementById('bookshelf');
+            shelf.innerHTML = '';
+            
+            if (currentBooks.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'empty-message';
+                emptyMessage.textContent = 'SYNC 버튼을 눌러 책을 추가해주세요';
+                shelf.appendChild(emptyMessage);
+            } else {
+                currentBooks.forEach(bookData => {
+                    const book = createBook(bookData.title, bookData.author);
+                    shelf.appendChild(book);
+                });
+            }
+        }
+
+        function resetBookshelf() {
+            currentBooks = [];
+            localStorage.removeItem('notionBookshelfBooks');
+            renderBookshelf();
+            showNotification('책장이 초기화되었습니다', 'info');
+        }
+
+        async function syncDatabase() {
+            if (!config.databaseId) {
+                showNotification('먼저 Database ID를 설정해주세요', 'error');
+                document.getElementById('setupPanel').style.display = 'block';
+                return;
+            }
+
+            const syncBtn = document.getElementById('sync');
+            syncBtn.disabled = true;
+            syncBtn.innerHTML = 'SYNC<span class="loading"></span>';
+
+            try {
+                // 서버리스 함수 호출 (API 키는 서버에 안전하게 보관됨)
+                const response = await fetch('/api/notion', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        databaseId: config.databaseId
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || `API 오류: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                const notionBooks = data.results.map(page => {
+                    const titleProp = page.properties.title;
+                    const authorProp = page.properties.author;
+                    
+                    let title = '';
+                    let author = '';
+                    
+                    if (titleProp && titleProp.title && titleProp.title.length > 0) {
+                        title = titleProp.title[0].plain_text;
+                    }
+                    
+                    if (authorProp && authorProp.rich_text && authorProp.rich_text.length > 0) {
+                        author = authorProp.rich_text[0].plain_text;
+                    }
+                    
+                    return { title, author };
+                }).filter(book => book.title);
+
+                const newBooks = notionBooks.filter(dbBook => 
+                    !currentBooks.some(currentBook => 
+                        currentBook.title === dbBook.title && currentBook.author === dbBook.author
+                    )
+                );
+
+                if (newBooks.length === 0) {
+                    showNotification('새로운 책이 없습니다', 'info');
+                } else {
+                    currentBooks = [...currentBooks, ...newBooks];
+                    localStorage.setItem('notionBookshelfBooks', JSON.stringify(currentBooks));
+                    renderBookshelf();
+                    showNotification(`${newBooks.length}권의 책이 추가되었습니다`, 'success');
+                }
+
+            } catch (error) {
+                console.error('동기화 오류:', error);
+                showNotification('동기화 실패: ' + error.message, 'error');
+            } finally {
+                syncBtn.disabled = false;
+                syncBtn.innerHTML = 'SYNC';
+            }
+        }
+
+        // 초기화
+        loadConfig();
+    </script>
+</body>
+</html>
